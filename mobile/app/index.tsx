@@ -1,4 +1,5 @@
-import { Text, View } from "react-native";
+import { Text, TextInput, TouchableOpacity, View } from "react-native";
+import {Image} from 'expo-image';
 
 export default function Index() {
   return (
@@ -9,11 +10,9 @@ export default function Index() {
         justifyContent: "center",
         alignItems: "center",
       }}
-    >
-      <Text style={{
-        fontSize: 20,
-        color: "black",
-      }}>Edit my name app/index.tsx to edit this screen.</Text>
+    > 
+    <Text>Edit indx.tsx/src</Text>
     </View>
+    
   );
 }
