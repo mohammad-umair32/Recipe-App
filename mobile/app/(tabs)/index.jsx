@@ -1,11 +1,4 @@
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  FlatList,
-  RefreshControl,
-} from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, FlatList, RefreshControl } from "react-native";
 import { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
 import { MealAPI } from "../../services/mealAPI";
@@ -14,8 +7,10 @@ import { Image } from "expo-image";
 import { COLORS } from "../../constants/colors";
 import { Ionicons } from "@expo/vector-icons";
 import CategoryFilter from "../../components/CategoryFilter";
-// import RecipeCard from "../../components/RecipeCard";
-// import LoadingSpinner from "../../components/LoadingSpinner";
+import RecipeCard from "../../components/RecipeCard";
+import LoadingSpinner from "../../components/LoadingSpinner";
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const HomeScreen = () => {
   const router = useRouter();
@@ -80,7 +75,7 @@ const HomeScreen = () => {
     await loadCategoryData(category);
   };
 
-   const onRefresh = async () => {
+  const onRefresh = async () => {
     setRefreshing(true);
     // await sleep(2000);
     await loadData();
@@ -91,29 +86,38 @@ const HomeScreen = () => {
     loadData();
   }, []);
 
+  if (loading && !refreshing) return <LoadingSpinner message="Loading delicions recipes..." />;
+
   return (
     <View style={homeStyles.container}>
       <ScrollView
-      showsVerticalScrollIndicator={false}
-    //   refreshControl={() => {}}
-      contentContainerStyle={homeStyles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={COLORS.primary}
+          />
+        }
+        contentContainerStyle={homeStyles.scrollContent}
       >
+        {/*  ANIMAL ICONS */}
         <View style={homeStyles.welcomeSection}>
-            <Image
+          <Image
             source={require("../../assets/images/lamb.png")}
             style={{
               width: 100,
               height: 100,
             }}
           />
-            <Image
+          <Image
             source={require("../../assets/images/chicken.png")}
             style={{
               width: 100,
               height: 100,
             }}
           />
-            <Image
+          <Image
             source={require("../../assets/images/pork.png")}
             style={{
               width: 100,
@@ -121,60 +125,89 @@ const HomeScreen = () => {
             }}
           />
         </View>
-        {featuredRecipe && (
-            <View style={homeStyles.featuredSection}>
-                <TouchableOpacity style={homeStyles.featuredCard}
-                activeOpacity={0.9}
-                onPress={() => router.push(`/recipe/${featuredRecipe.id}`)}>
-                    <View style={homeStyles.featuredImageContainer}>
-                        <Image
-                        source={{uri: featuredRecipe.image}}
-                        style={homeStyles.featuredImage}
-                        contentFit="cover"
-                        transition={500}
-                        />
-                        <View style={homeStyles.featuredOverlay}>
-                            <View style={homeStyles.featuredBadge}>
-                                <Text style={homeStyles.featuredBadgeText}>Featured</Text>
-                            </View>
 
-                            <View style={homeStyles.featuredContent}>
-                                <Text style={homeStyles.featuredTitle} numberOfLines={2}>
-                                    {featuredRecipe.title}
-                                </Text>
-                                <View style={homeStyles.featuredMeta}>
-                                    <View style={homeStyles.metaItem}>
-                                        <Ionicons name="time-outline" size={16} color={COLORS.white}/>
-                                        <Text style={homeStyles.metaText}>{featuredRecipe.cookTime}</Text>
-                                    </View>
-                                    <View style={homeStyles.metaItem}>
-                                        <Ionicons name="people-outline" size={16} color={COLORS.white}/>
-                                        <Text style={homeStyles.metaText}>{featuredRecipe.servings}</Text>
-                                    </View>
-                                    {featuredRecipe.area && (
-                                        <View style={homeStyles.metaItem}>
-                                            <Ionicons name="location-outline" size={16} color={COLORS.white}/>
-                                            <Text style={homeStyles.metaText}>{featuredRecipe.area}</Text>
-                                        </View>
-                                    )} 
-                                </View>
-                            </View>
+        {/* FEATURED SECTION */}
+        {featuredRecipe && (
+          <View style={homeStyles.featuredSection}>
+            <TouchableOpacity
+              style={homeStyles.featuredCard}
+              activeOpacity={0.9}
+              onPress={() => router.push(`/recipe/${featuredRecipe.id}`)}
+            >
+              <View style={homeStyles.featuredImageContainer}>
+                <Image
+                  source={{ uri: featuredRecipe.image }}
+                  style={homeStyles.featuredImage}
+                  contentFit="cover"
+                  transition={500}
+                />
+                <View style={homeStyles.featuredOverlay}>
+                  <View style={homeStyles.featuredBadge}>
+                    <Text style={homeStyles.featuredBadgeText}>Featured</Text>
+                  </View>
+
+                  <View style={homeStyles.featuredContent}>
+                    <Text style={homeStyles.featuredTitle} numberOfLines={2}>
+                      {featuredRecipe.title}
+                    </Text>
+
+                    <View style={homeStyles.featuredMeta}>
+                      <View style={homeStyles.metaItem}>
+                        <Ionicons name="time-outline" size={16} color={COLORS.white} />
+                        <Text style={homeStyles.metaText}>{featuredRecipe.cookTime}</Text>
+                      </View>
+                      <View style={homeStyles.metaItem}>
+                        <Ionicons name="people-outline" size={16} color={COLORS.white} />
+                        <Text style={homeStyles.metaText}>{featuredRecipe.servings}</Text>
+                      </View>
+                      {featuredRecipe.area && (
+                        <View style={homeStyles.metaItem}>
+                          <Ionicons name="location-outline" size={16} color={COLORS.white} />
+                          <Text style={homeStyles.metaText}>{featuredRecipe.area}</Text>
                         </View>
+                      )}
                     </View>
-                </TouchableOpacity>
-            </View>
+                  </View>
+                </View>
+              </View>
+            </TouchableOpacity>
+          </View>
         )}
 
         {categories.length > 0 && (
-            <CategoryFilter
+          <CategoryFilter
             categories={categories}
             selectedCategory={selectedCategory}
-            onSelectCategory = {handleCategorySelect}
-            />
+            onSelectCategory={handleCategorySelect}
+          />
         )}
+
+        <View style={homeStyles.recipesSection}>
+          <View style={homeStyles.sectionHeader}>
+            <Text style={homeStyles.sectionTitle}>{selectedCategory}</Text>
+          </View>
+
+          {recipes.length > 0 ? (
+            <FlatList
+              data={recipes}
+              renderItem={({ item }) => <RecipeCard recipe={item} />}
+              keyExtractor={(item) => item.id.toString()}
+              numColumns={2}
+              columnWrapperStyle={homeStyles.row}
+              contentContainerStyle={homeStyles.recipesGrid}
+              scrollEnabled={false}
+              // ListEmptyComponent={}
+            />
+          ) : (
+            <View style={homeStyles.emptyState}>
+              <Ionicons name="restaurant-outline" size={64} color={COLORS.textLight} />
+              <Text style={homeStyles.emptyTitle}>No recipes found</Text>
+              <Text style={homeStyles.emptyDescription}>Try a different category</Text>
+            </View>
+          )}
+        </View>
       </ScrollView>
     </View>
   );
 };
-
 export default HomeScreen;
