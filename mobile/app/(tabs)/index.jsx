@@ -13,7 +13,7 @@ import { homeStyles } from "../../assets/styles/home.styles";
 import { Image } from "expo-image";
 import { COLORS } from "../../constants/colors";
 import { Ionicons } from "@expo/vector-icons";
-// import CategoryFilter from "../../components/CategoryFilter";
+import CategoryFilter from "../../components/CategoryFilter";
 // import RecipeCard from "../../components/RecipeCard";
 // import LoadingSpinner from "../../components/LoadingSpinner";
 
@@ -163,6 +163,14 @@ const HomeScreen = () => {
                     </View>
                 </TouchableOpacity>
             </View>
+        )}
+
+        {categories.length > 0 && (
+            <CategoryFilter
+            categories={categories}
+            selectedCategory={selectedCategory}
+            onSelectCategory = {handleCategorySelect}
+            />
         )}
       </ScrollView>
     </View>
